@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="https://th.bing.com/th/id/OIP.dptlnUndDO4T3SOyUT9fCgAAAA?w=200&h=200&c=7&r=0&o=5&pid=1.7">
+    <title>Leaf Condition Prediction</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Poppins', Arial, sans-serif;
+      }
+      
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #1b5e20 0%, #4caf50 100%);
+        background-attachment: fixed;
+        padding: 20px;
+      }
+
+      .title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 30px;
+        text-align: center;
+        color: #fff;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        position: relative;
+      }
+
+      .title::after {
+        content: '🍃';
+        position: absolute;
+        right: -40px;
+        top: -10px;
+        font-size: 1.8rem;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      .container {
+        width: 90%;
+        max-width: 500px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+        transition: transform 0.3s ease;
+      }
+
+      .container:hover {
+        transform: translateY(-5px);
+      }
+
+      .upload-section {
+        position: relative;
+        margin: 20px 0;
+      }
+
+      .custom-upload {
+        display: inline-block;
+        padding: 15px 30px;
+        background: #2e7d32;
+        color: white;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(46,125,50,0.3);
+        border: none;
+        font-weight: 500;
+      }
+
+      .custom-upload:hover {
+        background: #1b5e20;
+        transform: scale(1.05);
+      }
+
+      .custom-upload:active {
+        transform: scale(0.95);
+      }
+
+      #imageInput {
+        display: none;
+      }
+
+      #imageContainer {
+        margin: 20px 0;
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+        background: #f8f9fa;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #imageContainer img {
+        max-width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        border-radius: 15px;
+        transition: opacity 0.3s ease;
+      }
+
+      .placeholder-text {
+        position: absolute;
+        color: #6c757d;
+        font-size: 1.1rem;
+      }
+
+      button#submitButton {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(45deg, #fbc02d, #f9a825);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 15px rgba(251,192,45,0.3);
+        display: none;
+      }
+
+      button#submitButton:hover {
+        background: linear-gradient(45deg, #f9a825, #f57f17);
+        transform: translateY(-2px);
+      }
+
+      .text-tag {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.4s ease;
+      }
+
+      .text-tag.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .prediction-icon {
+        font-size: 1.5rem;
+        margin-right: 10px;
+      }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+
+      @media (max-width: 768px) {
+        .title {
+          font-size: 2rem;
+        }
+        .container {
+          width: 95%;
+          padding: 20px;
+        }
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="title">Leaf Health Analyzer</div>
+
+    <div class="container">
+      <div class="upload-section">
+        <label class="custom-upload">
+          📤 Upload Leaf Image
+          <input type="file" id="imageInput" accept="image/*" onchange="showImage(event)">
+        </label>
+      </div>
+      
+      <div id="imageContainer">
+        <div class="placeholder-text">Preview will appear here</div>
+      </div>
+     
+      <button id="submitButton" onclick="submitForm()">Analyze Leaf</button>
+      <div class="text-tag" id="textTag"></div>
+    </div>
+
+    <script>
+      let uploadedImage = null;
+
+      function showImage(event) {
+        const imageContainer = document.getElementById("imageContainer");
+        const textTag = document.getElementById("textTag");
+        const submitButton = document.getElementById("submitButton");
+        const placeholder = imageContainer.querySelector('.placeholder-text');
+
+        imageContainer.innerHTML = '<div class="placeholder-text">Preview will appear here</div>';
+        textTag.textContent = '';
+        textTag.classList.remove('visible');
+
+        const file = event.target.files[0];
+
+        if (file) {
+          placeholder.remove();
+          const img = document.createElement("img");
+          img.src = URL.createObjectURL(file);
+          imageContainer.appendChild(img);
+
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            uploadedImage = e.target.result;
+          };
+          reader.readAsDataURL(file);
+
+          submitButton.style.display = "block";
+        } else {
+          textTag.textContent = "No image selected.";
+          submitButton.style.display = "none";
+        }
+      }
+
+      async function submitForm() {
+        const textTag = document.getElementById("textTag");
+        if (!uploadedImage) {
+          textTag.textContent = "⚠️ Please upload an image first!";
+          textTag.classList.add('visible');
+          return;
+        }
+
+        textTag.textContent = "🔍 Analyzing...";
+        textTag.classList.add('visible');
+
+        try {
+          const response = await fetch("http://127.0.0.1:5000", {
+            method: "POST",
+            body: JSON.stringify({ TextImg: uploadedImage }),
+            headers: { "Content-type": "application/json" }
+          });
+          
+          const data = await response.json();
+          let resultText = '';
+          let icon = '';
+
+          switch(data.prediction) {
+            case 0:
+              icon = '🌿✅';
+              resultText = 'Healthy Leaf';
+              textTag.style.color = '#2e7d32';
+              break;
+            case 1:
+              icon = '⚠️🍂';
+              resultText = 'Powdery Mildew Detected';
+              textTag.style.color = '#d32f2f';
+              break;
+            case 2:
+              icon = '🚨🍁';
+              resultText = 'Leaf Rust Detected';
+              textTag.style.color = '#ef6c00';
+              break;
+          }
+          
+          textTag.innerHTML = `<span class="prediction-icon">${icon}</span>${resultText}`;
+          textTag.classList.add('visible');
+          
+        } catch (err) {
+          console.error(err);
+          textTag.innerHTML = '❌ Error processing request';
+          textTag.style.color = '#d32f2f';
+          textTag.classList.add('visible');
+        }
+      }
+    </script>
+  </body>
+</html>
