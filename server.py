@@ -14,10 +14,13 @@ app = Flask(__name__)
 file_id = "1kZnG8fyuuEXJ4JHId6g76_KqudrsyqyE"
 file_path = "PLANT.pkl"
 
+# Check if the model file exists, if not, download it
 if not os.path.exists(file_path):
     download_url = f"https://drive.google.com/uc?id={file_id}"
     gdown.download(download_url, file_path, quiet=False)
-with open('./PLANT.pkl', 'rb') as file:
+
+# Load the model after it has been downloaded
+with open(file_path, 'rb') as file:
     model = pickle.load(file)
 
 @app.route("/", methods=["GET"])
